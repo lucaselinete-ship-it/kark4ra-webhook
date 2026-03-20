@@ -1,31 +1,17 @@
-import express from "express";
-
-const app = express();
-app.use(express.json());
-
-const PORT = process.env.PORT || 10000;
-
-// rota raiz opcional
-app.get("/", (req, res) => {
-  res.status(200).send("Servidor online");
-});
-
-// rota GET pro UptimeRobot
-app.get("/webhook/mercadopago", (req, res) => {
-  res.status(200).send("Webhook ativo");
-});
-
-// rota POST do Mercado Pago
 app.post("/webhook/mercadopago", async (req, res) => {
   console.log("📩 Webhook recebido!");
+  console.log("📦 Dados recebidos:", req.body);
 
   res.status(200).send("OK");
 
   try {
-    const body = req.body;
-    console.log("📦 Dados recebidos:", body);
+    let paymentId = null;
 
-    const paymentId = body?.data?.id;
+    if (req.body?.data?.id) {
+      paymentId = String(req.body.data.id);
+    } else if (req.body?.resource) {
+      paymentId = String(req.body.resource);
+    }
 
     if (!paymentId) {
       console.log("❌ Sem payment_id");
@@ -34,11 +20,11 @@ app.post("/webhook/mercadopago", async (req, res) => {
 
     console.log("💰 Payment ID:", paymentId);
 
-  } catch (error) {
-    console.error("🔥 Erro no webhook:", error);
+    // daqui pra frente:
+    // consultar API do Mercado Pago
+    // verificar se status = approved
+    // entregar DZCoins
+  } catch (err) {
+    console.error("❌ Erro ao processar webhook:", err);
   }
-});
-
-app.listen(PORT, () => {
-  console.log(`🚀 Webhook rodando na porta ${PORT}`);
 });
