@@ -1,49 +1,41 @@
-const express = require("express");
-const axios = require("axios");
+import express from "express";
 
 const app = express();
 app.use(express.json());
 
-const PORT = process.env.PORT || 10000;
-
+// 🔥 WEBHOOK MERCADO PAGO
 app.post("/webhook/mercadopago", async (req, res) => {
-    console.log("🔔 Webhook recebido:", req.body);
+  console.log("📩 Webhook recebido!");
 
-    try {
-        const paymentId = req.body?.data?.id;
+  // ⚠️ RESPONDE IMEDIATO (ESSENCIAL)
+  res.status(200).send("OK");
 
-        if (!paymentId) {
-            return res.sendStatus(200);
-        }
+  try {
+    const body = req.body;
+    console.log("📦 Dados recebidos:", body);
 
-        const response = await axios.get(
-            `https://api.mercadopago.com/v1/payments/${paymentId}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${process.env.MERCADOPAGO_ACCESS_TOKEN}`
-                }
-            }
-        );
+    const paymentId = body?.data?.id;
 
-        const payment = response.data;
-
-        console.log("💰 Status:", payment.status);
-
-        if (payment.status === "approved") {
-            console.log("✅ PAGAMENTO APROVADO");
-        }
-
-    } catch (err) {
-        console.error("❌ Erro:", err.message);
+    if (!paymentId) {
+      console.log("❌ Sem payment_id");
+      return;
     }
 
-    res.sendStatus(200);
+    console.log("💰 Payment ID:", paymentId);
+
+    // 👉 aqui você pode depois:
+    // - consultar Mercado Pago
+    // - chamar seu bot
+    // - salvar no banco
+
+  } catch (error) {
+    console.error("🔥 Erro no webhook:", error);
+  }
 });
 
-app.get("/", (req, res) => {
-    res.send("Webhook rodando 🚀");
-});
+// servidor
+const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
+app.listen(PORT, () => {
+  console.log(`🚀 Webhook rodando na porta ${PORT}`);
 });
